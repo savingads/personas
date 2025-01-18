@@ -10,24 +10,28 @@
 
 <owl:ObjectProperty rdf:about="#has_demographics">
   <rdfs:domain rdf:resource="#SimulatedUser"/>
+  <rdfs:domain rdf:resource="#Agent"/>
   <rdfs:range rdf:resource="#DemographicData"/>
   <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Links a simulated user to its demographic attributes.</rdfs:comment>
 </owl:ObjectProperty>
 
 <owl:ObjectProperty rdf:about="#has_behavior">
   <rdfs:domain rdf:resource="#SimulatedUser"/>
+  <rdfs:domain rdf:resource="#Agent"/>
   <rdfs:range rdf:resource="#BehavioralData"/>
   <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Links a simulated user to its behavioral data.</rdfs:comment>
 </owl:ObjectProperty>
 
 <owl:ObjectProperty rdf:about="#has_psychographics">
   <rdfs:domain rdf:resource="#SimulatedUser"/>
+  <rdfs:domain rdf:resource="#Agent"/>
   <rdfs:range rdf:resource="#PsychographicData"/>
   <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Links a simulated user to its psychographic data.</rdfs:comment>
 </owl:ObjectProperty>
 
 <owl:ObjectProperty rdf:about="#has_context">
   <rdfs:domain rdf:resource="#SimulatedUser"/>
+  <rdfs:domain rdf:resource="#Agent"/>
   <rdfs:range rdf:resource="#ContextualData"/>
   <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Links a simulated user to its contextual data.</rdfs:comment>
 </owl:ObjectProperty>
@@ -53,6 +57,12 @@
   <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Occupation of the simulated user.</rdfs:comment>
 </owl:DatatypeProperty>
 
+<owl:DatatypeProperty rdf:about="#education_level">
+  <rdfs:domain rdf:resource="#DemographicData"/>
+  <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Education level of the simulated user.</rdfs:comment>
+</owl:DatatypeProperty>
+
 <owl:DatatypeProperty rdf:about="#browsing_patterns">
   <rdfs:domain rdf:resource="#BehavioralData"/>
   <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
@@ -73,6 +83,12 @@
   <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Simulated likelihood of making a purchase.</rdfs:comment>
 </owl:DatatypeProperty>
 
+<owl:DatatypeProperty rdf:about="#session_length">
+  <rdfs:domain rdf:resource="#BehavioralData"/>
+  <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
+  <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Length of a browsing session.</rdfs:comment>
+</owl:DatatypeProperty>
+
 <owl:DatatypeProperty rdf:about="#personality_traits">
   <rdfs:domain rdf:resource="#PsychographicData"/>
   <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
@@ -84,6 +100,18 @@
   <rdfs:domain rdf:resource="#PsychographicData"/>
   <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
   <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">User's short-term goal, e.g., 'shopping' or 'researching.'</rdfs:comment>
+</owl:DatatypeProperty>
+
+<owl:DatatypeProperty rdf:about="#interests">
+  <rdfs:domain rdf:resource="#PsychographicData"/>
+  <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Interests of the simulated user.</rdfs:comment>
+</owl:DatatypeProperty>
+
+<owl:DatatypeProperty rdf:about="#values">
+  <rdfs:domain rdf:resource="#PsychographicData"/>
+  <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Values of the simulated user.</rdfs:comment>
 </owl:DatatypeProperty>
 
 <owl:DatatypeProperty rdf:about="#environment">
@@ -100,7 +128,29 @@
   <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Quality of network, e.g., 'slow,' 'fast.'</rdfs:comment>
 </owl:DatatypeProperty>
 
+<owl:DatatypeProperty rdf:about="#device_type">
+  <rdfs:domain rdf:resource="#ContextualData"/>
+  <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Type of device used by the simulated user.</rdfs:comment>
+</owl:DatatypeProperty>
+
+<owl:DatatypeProperty rdf:about="#location">
+  <rdfs:domain rdf:resource="#ContextualData"/>
+  <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Location of the simulated user.</rdfs:comment>
+</owl:DatatypeProperty>
+
+<owl:DatatypeProperty rdf:about="#time_of_access">
+  <rdfs:domain rdf:resource="#ContextualData"/>
+  <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+  <rdfs:comment rdf:datatype="http://www.w3.org/2001/XMLSchema#string">Time of access by the simulated user.</rdfs:comment>
+</owl:DatatypeProperty>
+
 <owl:Class rdf:about="#SimulatedUser">
+  <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
+</owl:Class>
+
+<owl:Class rdf:about="#Agent">
   <rdfs:subClassOf rdf:resource="http://www.w3.org/2002/07/owl#Thing"/>
 </owl:Class>
 
