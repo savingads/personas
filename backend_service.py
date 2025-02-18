@@ -10,11 +10,38 @@ from selenium.webdriver.edge.options import Options as EdgeOptions
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
+import openvpn_api
 import logging
+import time
 
 app = Flask(__name__)
 
 logging.basicConfig(level=logging.DEBUG)
+
+def connect_vpn(region):
+    logging.debug(f'Connecting to VPN server in region: {region}')
+    vpn = openvpn_api.VPN('127.0.0.1', 7505)
+    try:
+        vpn.connect()
+        vpn.login('username', 'password')  # Replace with actual credentials
+        vpn.set_config(f'/path/to/{region}.ovpn')  # Replace with actual path to .ovpn file for the region
+        vpn.start()
+        time.sleep(5)  # Give some time for the VPN to establish the connection
+        logging.debug('VPN connection established')
+    except Exception as e:
+        logging.error(f'Failed to connect to VPN: {e}')
+        return False
+    return True
+
+def disconnect_vpn():
+    logging.debug('Disconnecting VPN')
+    vpn = openvpn_api.VPN('127.0.0.1', 7505)
+    try:
+        vpn.connect()
+        vpn.stop()
+        logging.debug('VPN disconnected')
+    except Exception as e:
+        logging.error(f'Failed to disconnect VPN: {e}')
 
 def get_driver(browser, accept_language):
     logging.debug(f'Initializing WebDriver for browser: {browser}')
@@ -56,44 +83,32 @@ def preview():
     url = data.get('url')
     region = data.get('region')
     
-    # Define geolocation coordinates and Accept-Language headers for each region
-    region_settings = {
-        'North America': {'latitude': 37.7749, 'longitude': -122.4194, 'accept_language': 'en-US'},
-        'Europe': {'latitude': 48.8566, 'longitude': 2.3522, 'accept_language': 'fr-FR'},
-        'Asia': {'latitude': 35.6895, 'longitude': 139.6917, 'accept_language': 'ja-JP'},
-        'South America': {'latitude': -23.5505, 'longitude': -46.6333, 'accept_language': 'pt-BR'},
-        'Africa': {'latitude': -1.2921, 'longitude': 36.8219, 'accept_language': 'sw-KE'},
-        'Australia': {'latitude': -33.8688, 'longitude': 151.2093, 'accept_language': 'en-AU'}
+    # Define Accept-Language headers for each region
+    region_languages = {
+        'North America': 'en-US',
+        'Europe': 'fr-FR',
+        'Asia': 'ja-JP',
+        'South America': 'pt-BR',
+        'Africa': 'sw-KE',
+        'Australia': 'en-AU'
     }
     
-    # Get the settings for the selected region
-    settings = region_settings.get(region, {'latitude': 0, 'longitude': 0, 'accept_language': 'en-US'})
+    # Get the Accept-Language header for the selected region
+    accept_language = region_languages.get(region, 'en-US')
     
-    driver = get_driver(browser, settings['accept_language'])
+    # Connect to VPN
+    if not connect_vpn(region):
+        return jsonify({'status': 'error', 'message': 'Failed to connect to VPN'}), 500
+    
+    driver = get_driver(browser, accept_language)
     if driver:
-        if browser in ['chrome', 'edge']:
-            driver.execute_cdp_cmd("Emulation.setGeolocationOverride", {
-                "latitude": settings['latitude'],
-                "longitude": settings['longitude'],
-                "accuracy": 100
-            })
-        elif browser == 'firefox':
-            driver.install_addon('geckodriver', temporary=True)
-            driver.execute_script("""
-                window.navigator.geolocation.getCurrentPosition = function(success){
-                    var position = {"coords" : {
-                        "latitude": %(latitude)s,
-                        "longitude": %(longitude)s
-                    }};
-                    success(position);
-                }
-            """ % settings)
-        
         driver.get(url)
         # Add logic to capture screenshot or perform actions
         driver.quit()
+        disconnect_vpn()
         return jsonify({'status': 'success'}), 200
     else:
+        disconnect_vpn()
         return jsonify({'status': 'error', 'message': 'Invalid browser'}), 400
 
 if __name__ == '__main__':
