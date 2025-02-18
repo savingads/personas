@@ -33,7 +33,8 @@
                     </div>
                     <div class="form-group">
                         <label for="url">URL:</label>
-                        <input type="text" class="form-control" id="url" name="url" placeholder="Enter URL">
+                        <input type="text" class="form-control" id="url" name="url" value="https://www.google.com"
+                            placeholder="Enter URL">
                     </div>
                     <button type="submit" class="btn btn-primary">Submit</button>
                 </form>
@@ -100,7 +101,7 @@
         document.getElementById('region').addEventListener('change', function () {
             var selectedRegion = this.value;
             var domain = regionDomains[selectedRegion] || 'en';
-            document.getElementById('url').value = 'https://' + domain + '.wikipedia.org';
+            document.getElementById('url').value = 'https://www.google.com';
         });
 
         for (var region in regions) {
@@ -110,24 +111,25 @@
                 var regionName = this.getPopup().getContent();
                 document.getElementById('region').value = regionName;
                 var domain = regionDomains[regionName] || 'en';
-                document.getElementById('url').value = 'https://' + domain + '.wikipedia.org';
+                document.getElementById('url').value = 'https://www.google.com';
             });
         }
 
-        // Set default URL to English Wikipedia
-        document.getElementById('url').value = 'https://en.wikipedia.org';
+        // Set default URL to Google
+        document.getElementById('url').value = 'https://www.google.com';
 
         document.getElementById('webdriver-options-form').addEventListener('submit', function (event) {
             event.preventDefault();
             var browser = document.getElementById('browser').value;
             var url = document.getElementById('url').value;
+            var region = document.getElementById('region').value;
 
             fetch('/preview', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ browser: browser, url: url })
+                body: JSON.stringify({ browser: browser, url: url, region: region })
             })
                 .then(response => response.json())
                 .then(data => {
