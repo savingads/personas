@@ -10,37 +10,37 @@ from selenium.webdriver.edge.options import Options as EdgeOptions
 from webdriver_manager.chrome import ChromeDriverManager
 from webdriver_manager.firefox import GeckoDriverManager
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
-import openvpn_api
+import subprocess
 import logging
-import time
+import json
+import os
 
 app = Flask(__name__)
 
 logging.basicConfig(level=logging.DEBUG)
 
+def load_credentials():
+    with open(os.path.expanduser('~/nordvpn_credentials.json')) as f:
+        return json.load(f)
+
 def connect_vpn(region):
     logging.debug(f'Connecting to VPN server in region: {region}')
-    vpn = openvpn_api.VPN('127.0.0.1', 7505)
+    credentials = load_credentials()
     try:
-        vpn.connect()
-        vpn.login('username', 'password')  # Replace with actual credentials
-        vpn.set_config(f'/path/to/{region}.ovpn')  # Replace with actual path to .ovpn file for the region
-        vpn.start()
-        time.sleep(5)  # Give some time for the VPN to establish the connection
+        subprocess.run(['nordvpn', 'login', '--username', credentials['username'], '--password', credentials['password']], check=True)
+        subprocess.run(['nordvpn', 'connect', region], check=True)
         logging.debug('VPN connection established')
-    except Exception as e:
+    except subprocess.CalledProcessError as e:
         logging.error(f'Failed to connect to VPN: {e}')
         return False
     return True
 
 def disconnect_vpn():
     logging.debug('Disconnecting VPN')
-    vpn = openvpn_api.VPN('127.0.0.1', 7505)
     try:
-        vpn.connect()
-        vpn.stop()
+        subprocess.run(['nordvpn', 'disconnect'], check=True)
         logging.debug('VPN disconnected')
-    except Exception as e:
+    except subprocess.CalledProcessError as e:
         logging.error(f'Failed to disconnect VPN: {e}')
 
 def get_driver(browser, accept_language):
