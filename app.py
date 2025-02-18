@@ -1,9 +1,13 @@
+import threading
+import os
+import time
 from flask import Flask, render_template, request
 from flask_sqlalchemy import SQLAlchemy
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
+import sys
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///regions.db'
@@ -26,9 +30,9 @@ def select_region():
     url = request.form['url']
     
     # Save the selected region and URL to the database
-    new_region = Region(name=selected_region, url=url)
-    db.session.add(new_region)
-    db.session.commit()
+    # new_region = Region(name=selected_region, url=url)
+    # db.session.add(new_region)
+    # db.session.commit()
     
     # Define geolocation coordinates for each region
     geolocations = {
@@ -64,6 +68,18 @@ def select_region():
     
     return f"Selected region: {selected_region}. URL opened in browser with geolocation set."
 
+def run_backend_service():
+    from backend_service import app as backend_app
+    backend_app.run(debug=True, use_reloader=False)
+
 if __name__ == '__main__':
     db.create_all()
-    app.run(debug=True)
+    backend_thread = threading.Thread(target=run_backend_service)
+    backend_thread.start()
+    try:
+        # Give the backend service some time to start
+        time.sleep(2)
+        app.run(debug=True)
+    finally:
+        # Ensure the backend service is terminated when the app exits
+        backend_thread.join()

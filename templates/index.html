@@ -5,34 +5,65 @@
     <meta charset="UTF-8">
     <title>Select Region</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         #map {
             height: 400px;
             width: 100%;
-            max-width: 1000px;
-            /* Set a maximum width for the map container */
+            max-width: 1500px;
+            /* Increased maximum width for the map container */
             margin: auto;
-            /* Center the map container */
         }
     </style>
 </head>
 
 <body>
-    <h1>Select a Geographic Region</h1>
-    <form action="/select_region" method="post">
-        <label for="region">Region:</label>
-        <select name="region" id="region">
-            {% for region in regions %}
-            <option value="{{ region }}">{{ region }}</option>
-            {% endfor %}
-        </select>
-        <br>
-        <label for="url">URL:</label>
-        <input type="text" id="url" name="url" placeholder="Enter URL">
-        <br>
-        <button type="submit">Submit</button>
-    </form>
-    <div id="map"></div>
+    <div class="container">
+        <h1 class="my-4">Select a Geographic Region</h1>
+        <div class="row">
+            <div class="col-md-6">
+                <form action="/select_region" method="post">
+                    <div class="form-group">
+                        <label for="region">Region:</label>
+                        <select class="form-control" name="region" id="region">
+                            {% for region in regions %}
+                            <option value="{{ region }}">{{ region }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="url">URL:</label>
+                        <input type="text" class="form-control" id="url" name="url" placeholder="Enter URL">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+            <div class="col-md-6">
+                <div id="map"></div>
+            </div>
+        </div>
+        <h2 class="my-4">Selenium WebDriver Options</h2>
+        <form id="webdriver-options-form">
+            <div class="form-group">
+                <label for="browser">Browser:</label>
+                <select class="form-control" id="browser" name="browser" disabled>
+                    <option value="chrome">Chrome</option>
+                    <option value="firefox">Firefox</option>
+                    <option value="safari">Safari</option>
+                    <option value="edge">Edge</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="cookies">Cookies:</label>
+                <textarea class="form-control" id="cookies" name="cookies" rows="3"
+                    placeholder="Enter cookies in JSON format" disabled></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" disabled>Save Options</button>
+        </form>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script>
         var map = L.map('map', {
@@ -42,7 +73,7 @@
                 [85, 180]
             ],
             maxBoundsViscosity: 1.0
-        }).setView([20, 0], 2); // Center the map at a global view
+        }).setView([20, -60], 1); // Center the map at a more zoomed-out view to show North America
 
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -57,13 +88,59 @@
             'Australia': [-33.8688, 151.2093] // Example: Sydney, Australia
         };
 
+        var regionDomains = {
+            'North America': 'en',
+            'Europe': 'fr',
+            'Asia': 'ja',
+            'South America': 'pt',
+            'Africa': 'sw',
+            'Australia': 'en'
+        };
+
+        document.getElementById('region').addEventListener('change', function () {
+            var selectedRegion = this.value;
+            var domain = regionDomains[selectedRegion] || 'en';
+            document.getElementById('url').value = 'https://' + domain + '.wikipedia.org';
+        });
+
         for (var region in regions) {
             var marker = L.marker(regions[region]).addTo(map);
             marker.bindPopup(region);
             marker.on('click', function (e) {
-                document.getElementById('region').value = this.getPopup().getContent();
+                var regionName = this.getPopup().getContent();
+                document.getElementById('region').value = regionName;
+                var domain = regionDomains[regionName] || 'en';
+                document.getElementById('url').value = 'https://' + domain + '.wikipedia.org';
             });
         }
+
+        // Set default URL to English Wikipedia
+        document.getElementById('url').value = 'https://en.wikipedia.org';
+
+        document.getElementById('webdriver-options-form').addEventListener('submit', function (event) {
+            event.preventDefault();
+            var browser = document.getElementById('browser').value;
+            var url = document.getElementById('url').value;
+
+            fetch('/preview', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ browser: browser, url: url })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        alert('Browser preview launched successfully');
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
     </script>
 </body>
 
