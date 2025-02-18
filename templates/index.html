@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Select Region</title>
+</head>
+
+<body>
+    <h1>Select a Geographic Region</h1>
+    <form action="/select_region" method="post">
+        <label for="region">Region:</label>
+        <select name="region" id="region">
+            {% for region in regions %}
+            <option value="{{ region }}">{{ region }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <label for="url">URL:</label>
+        <input type="text" id="url" name="url" placeholder="Enter URL">
+        <br>
+        <button type="submit">Submit</button>
+    </form>
+</body>
+
+</html>
