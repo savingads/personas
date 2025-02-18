@@ -4,6 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <title>Select Region</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 400px;
+            width: 100%;
+            max-width: 1000px;
+            /* Set a maximum width for the map container */
+            margin: auto;
+            /* Center the map container */
+        }
+    </style>
 </head>
 
 <body>
@@ -21,6 +32,39 @@
         <br>
         <button type="submit">Submit</button>
     </form>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        var map = L.map('map', {
+            worldCopyJump: false,
+            maxBounds: [
+                [-85, -180],
+                [85, 180]
+            ],
+            maxBoundsViscosity: 1.0
+        }).setView([20, 0], 2); // Center the map at a global view
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        var regions = {
+            'North America': [37.7749, -122.4194], // Example: San Francisco, USA
+            'Europe': [48.8566, 2.3522], // Example: Paris, France
+            'Asia': [35.6895, 139.6917], // Example: Tokyo, Japan
+            'South America': [-23.5505, -46.6333], // Example: São Paulo, Brazil
+            'Africa': [-1.2921, 36.8219], // Example: Nairobi, Kenya
+            'Australia': [-33.8688, 151.2093] // Example: Sydney, Australia
+        };
+
+        for (var region in regions) {
+            var marker = L.marker(regions[region]).addTo(map);
+            marker.bindPopup(region);
+            marker.on('click', function (e) {
+                document.getElementById('region').value = this.getPopup().getContent();
+            });
+        }
+    </script>
 </body>
 
 </html>

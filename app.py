@@ -1,10 +1,19 @@
 from flask import Flask, render_template, request
+from flask_sqlalchemy import SQLAlchemy
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options
 from webdriver_manager.chrome import ChromeDriverManager
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///regions.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
+class Region(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    url = db.Column(db.String(200), nullable=False)
 
 @app.route('/')
 def index():
@@ -15,6 +24,11 @@ def index():
 def select_region():
     selected_region = request.form['region']
     url = request.form['url']
+    
+    # Save the selected region and URL to the database
+    new_region = Region(name=selected_region, url=url)
+    db.session.add(new_region)
+    db.session.commit()
     
     # Define geolocation coordinates for each region
     geolocations = {
@@ -51,4 +65,5 @@ def select_region():
     return f"Selected region: {selected_region}. URL opened in browser with geolocation set."
 
 if __name__ == '__main__':
+    db.create_all()
     app.run(debug=True)
